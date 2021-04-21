@@ -39,10 +39,11 @@ export const socialAuth = async (req, res) => {
         expiresIn: "30days",
       });
     }
-    console.log("token",token)
+    const data = user ? user : newUser;
+    console.log("token",token);
     res.cookie("jwt", token);
-    res.redirect(`http://localhost:5000/dashboard`);
+    res.redirect(`${process.env.CLIENT_URL}/app/dashboard`);
   } catch (error) {
-    res.redirect("http://localhost:5000/");
+    res.redirect(`${process.env.CLIENT_URL}/`);
   }
 };

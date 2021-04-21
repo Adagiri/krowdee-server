@@ -1,8 +1,8 @@
 import { ApolloServer } from "apollo-server-express";
-
 import { getUser } from "./helpers/context/index.js";
 import resolvers from "./resolvers/index.js";
 import typeDefs from "./typeDefs/index.js";
+
 
 //apollo server configuration
 const server = new ApolloServer({
@@ -11,7 +11,6 @@ const server = new ApolloServer({
   context: async ({ req }) => {
     // fetch userId from token in req header
     await getUser(req);
-    console.log(req.userId)
     return { userId: req.userId };
   },
   formatError: (error) => {

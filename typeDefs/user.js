@@ -5,7 +5,7 @@ import { gql } from "apollo-server-express";
 
 export default gql`
   extend type Query {
-  fetchUser(_id: ID): User!
+  fetchUser: User!
   }
 
   extend type Mutation {

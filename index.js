@@ -15,8 +15,11 @@ passportConfig();
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(Session({ secret: "keyboard cat", resave: true, saveUninitialized: true }));
+app.use(Session({ secret: process.env.SESSION || "keyboard cat", resave: true, saveUninitialized: true }));
 const PORT = process.env.PORT || 3000;
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 passport.serializeUser(function (user, cb) {
   cb(null, user);
@@ -25,9 +28,6 @@ passport.serializeUser(function (user, cb) {
 passport.deserializeUser(function (obj, cb) {
   cb(null, obj);
 });
-
-app.use(passport.initialize());
-app.use(passport.session());
 
 ///////////////////////
 ///////////////////////
@@ -85,15 +85,8 @@ app.get(
 ///////////////////////
 ///////////////////////////
 
-server.applyMiddleware({ app, path: "/graphql/api" });
+server.applyMiddleware({ app, path: "/" });
 
-app.use("/", (req, res, next) => {
-  res.send("You are home");
-});
-
-app.use("/dashboard", (req, res, next) => {
-  res.send("We are dashboard");
-});
 
 connection()
   .then(() => {

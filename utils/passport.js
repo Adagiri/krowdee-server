@@ -5,7 +5,6 @@ import { Strategy as GithubStrategy } from "passport-github2";
 import { Strategy as TwitterStrategy } from "passport-twitter";
 import passportKeys from "../passportKeys.js";
 
-
 const {
   TWITTER_CONSUMER_SECRET,
   FACEBOOK_CLIENT_ID,
@@ -23,7 +22,7 @@ const facebookPassportConfig = () => {
       {
         clientID: FACEBOOK_CLIENT_ID,
         clientSecret: FACEBOOK_CLIENT_SECRET,
-        callbackURL: "http://localhost:5000/auth/facebook/callback",
+        callbackURL: `${process.env.API_URL}/auth/facebook/callback`,
         profileFields: ["id", "displayName", "name", "email", "picture"],
         passReqToCallback: true,
       },
@@ -48,7 +47,7 @@ const googlePassportConfig = () => {
       {
         clientID: GOOGLE_CLIENT_ID,
         clientSecret: GOOGLE_CLIENT_SECRET,
-        callbackURL: "http://localhost:5000/auth/google/callback",
+        callbackURL: `${process.env.API_URL}/auth/google/callback`,
         profileFields: [
           "id",
           "displayName",
@@ -63,7 +62,6 @@ const googlePassportConfig = () => {
         try {
           if (profile) {
             req.user = profile;
-            req.body.headingTo = "join";
             cb(null, profile);
           }
         } catch (error) {
@@ -80,7 +78,7 @@ const githubPassportConfig = () => {
       {
         clientID: GITHUB_CLIENT_ID,
         clientSecret: GITHUB_CLIENT_SECRET,
-        callbackURL: "http://localhost:5000/auth/github/callback",
+        callbackURL: `${process.env.API_URL}/auth/github/callback`,
         profileFields: [
           "id",
           "displayName",
@@ -95,7 +93,6 @@ const githubPassportConfig = () => {
         try {
           if (profile) {
             req.user = profile;
-            req.body.headingTo = "join";
             cb(null, profile);
           }
         } catch (error) {
@@ -112,7 +109,7 @@ const twitterPassportConfig = () => {
       {
         consumerKey: TWIITER_CONSUMER_KEY,
         consumerSecret: TWITTER_CONSUMER_SECRET,
-        callbackURL: "http://localhost:5000/auth/twitter/callback",
+        callbackURL: `${process.env.API_URL}/auth/twitter/callback`,
         profileFields: [
           "id",
           "displayName",
@@ -127,7 +124,6 @@ const twitterPassportConfig = () => {
         try {
           if (profile) {
             req.user = profile;
-            req.body.headingTo = "join";
             cb(null, profile);
           }
         } catch (error) {

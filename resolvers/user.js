@@ -10,8 +10,8 @@ import { users } from "../database/utils/injector.js";
 
 export default {
   Query: {
-    fetchUser: combineResolvers(isAuthenticated, async (_, { _id }) => {
-      const user = await users.findOne({ _id: ObjectID(_id) });
+    fetchUser: combineResolvers(isAuthenticated, async (_, __, {userId}) => {
+      const user = await users.findOne({ _id: ObjectID(userId) });
       if (!user) {
         throw new Error("user not found");
       } else {
