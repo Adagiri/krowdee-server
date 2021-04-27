@@ -9,7 +9,7 @@ export default {
   Query: {},
 
   Mutation: {
-    addContestQuestion: combineResolvers(
+    addQuestion: combineResolvers(
       isAuthenticated,
       async (_, { input }, { userId }) => {
         const { _id, name, num, text, opts, banner } = input;
@@ -58,7 +58,7 @@ export default {
         }
       }
     ),
-    updateContestQuestion: combineResolvers(
+    editQuestion: combineResolvers(
       isAuthenticated,
       async (_, { input }, { userId }) => {
         const { _id, num, name, ...rest } = input;
@@ -92,7 +92,7 @@ export default {
         } catch (error) {}
       }
     ),
-    deleteContestQuestion: combineResolvers(
+    deleteQuestion: combineResolvers(
       isAuthenticated,
       async (_, { input }, { userId }) => {
         const { _id, num } = input;

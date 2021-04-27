@@ -135,3 +135,10 @@ MongoDB schema versioning
 
 
 
+
+
+//static pages
+donate
+about
+privacy_policy
+terms_of_use

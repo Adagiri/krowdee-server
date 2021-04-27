@@ -41,9 +41,10 @@ export const socialAuth = async (req, res) => {
     }
     const data = user ? user : newUser;
     console.log("token",token);
+
     res.cookie("jwt", token);
-    res.redirect(`${process.env.CLIENT_URL}/app/dashboard`);
+    res.redirect(`${process.env.CLIENT_URL}/app/`);
   } catch (error) {
     res.redirect(`${process.env.CLIENT_URL}/`);
   }
-};
+};;;;;;;;;;;

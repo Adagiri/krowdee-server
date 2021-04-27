@@ -26,7 +26,17 @@ export default gql`
     medals: [medal!]
     contests: [Contest!]
     hosted: [ID!]
+    notifications: [Notification!]
+    waiting: [ID!]
+    participated: [ID!]
+  }
 
+  type Notification {
+    message: String!
+    extra: {
+      message: String
+      ref: ID
+    }
   }
 
   type medal {
