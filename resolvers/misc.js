@@ -49,5 +49,41 @@ export default {
         }
       }
     ),
+    solveTask: async (_, { input }) => {
+      const { _id, num, valid, userId } = input;
+      try {
+        const contest = await hosted.findOne({ _id: ObjectID(_id) });
+        const task = { num: question, opt: valid };
+        const question = contest.questions.filter(
+          (question) => (question.num = num)
+        );
+        const questValid = question[0].valid;
+        if (question[0].valid === valid) {
+          //increase the persons score and change his doc
+          //contest, clients, client
+          hosted.updateOne(
+            { _id: ObjectID(_id), "clients._id": ObjectID(userId) },
+            {
+              $inc: { "contests.$.score": 2 },
+              $push: { "contests.$.tasks": task },
+            }
+          );
+        } else {
+          hosted.updateOne(
+            { _id: ObjectID(_id), "clients._id": ObjectID(userId) },
+            {
+              $push: { "contests.$.tasks": task },
+            }
+          );                                      
+        }
+
+        return {
+          userValid: valid,
+          valid: questValid,
+        };
+      } catch (error) {
+        throw error;
+      }
+    },
   },
 };

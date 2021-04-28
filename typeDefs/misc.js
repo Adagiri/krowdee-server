@@ -1,14 +1,29 @@
 import { gql } from "apollo-server-express";
 
+
 export default gql`
   extend type Query {
     getSignedUrl(input: getSignedUrlInput): String!
-    leaderboard(input)
+    leaderboard()
     chat: Chat!
   }
 
   extend type Mutation {
     sendMessage(input: sendMessageInput): Boolean!
+    solveTask(input: solveTaskInput): TaskResult!
+  }
+
+
+  type TaskResult {
+    userValid: String!
+    valid: String!
+}
+
+  input solveTaskInput {
+    _id: ID!
+    num: Int!
+    valid: String
+    userId: ID!
   }
 
   type Chat {

@@ -22,8 +22,9 @@ export default gql`
   type User {
     name: String!
     avatar: String!
-    won: Int
+    won: Int!
     medals: [medal!]
+    points: Int!
     contests: [Contest!]
     hosted: [ID!]
     notifications: [Notification!]
