@@ -1,15 +1,11 @@
 import { gql } from "apollo-server-express";
 
-//github, facebook, twitter & google signups & logout
-// ___ krowdee/auth/github =====> 
-
 export default gql`
   extend type Query {
-  fetchUser: User!
+    fetchUser: User!
   }
 
   extend type Mutation {
-    join: [User!]
     editProfile(input: editProfileInput): Boolean!
   }
 
@@ -22,26 +18,41 @@ export default gql`
   type User {
     name: String!
     avatar: String!
-    won: Int!
-    medals: [medal!]
-    points: Int!
+    pts: Int!
     contests: [Contest!]
-    hosted: [ID!]
     notifications: [Notification!]
     waiting: [ID!]
+    closed: [ID!]
+    hosted: [ID!]
     participated: [ID!]
+    gold: Int
+    silver: Int
+    bronze: Int
+    catz: Categories!
+  }
+
+  type Categories {
+    art: Int
+    prog: Int
+    csc: Int
+    maths: Int
+    history: Int
+    english: Int
+    geography: Int
+    finance: Int
+    science: Int
+    tech: Int
+    variants: Int
   }
 
   type Notification {
     message: String!
-    extra: {
-      message: String
-      ref: ID
-    }
+    extra: Extra!
+    seen: Boolean!
   }
 
-  type medal {
-    _id: ID!
-    type: String
+  type Extra {
+    message: String
+    ref: ID
   }
 `;

@@ -1,8 +1,4 @@
 import jwt from "jsonwebtoken";
-import mongodb from "mongodb";
-const ObjectID = mongodb.ObjectID;
-
-import { users } from "../../database/utils/injector.js";
 
 export const getUser = async (req) => {
   try {
@@ -15,13 +11,9 @@ export const getUser = async (req) => {
 
       if (payload.userId) {
         req.userId = payload.userId;
+        console.log(payload.userId)
       }
-      // const user = await users.findOne({ _id: ObjectID(payload.userId) });
-      // if (user) {
-      //   req.userId = user._id;
-      // } else {
-      //   throw new Error("user not found")
-      // }
+  
     }
   } catch (error) {
     throw error;

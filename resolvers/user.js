@@ -1,5 +1,3 @@
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import mongodb from "mongodb";
 
 const ObjectID = mongodb.ObjectID;
@@ -10,7 +8,7 @@ import { users } from "../database/utils/injector.js";
 
 export default {
   Query: {
-    fetchUser: combineResolvers(isAuthenticated, async (_, __, {userId}) => {
+    fetchUser: combineResolvers(isAuthenticated, async (_, __, { userId }) => {
       const user = await users.findOne({ _id: ObjectID(userId) });
       if (!user) {
         throw new Error("user not found");

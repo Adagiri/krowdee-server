@@ -5,14 +5,12 @@ import typeDefs from "./typeDefs/index.js";
 
 
 //apollo server configuration
+
 const server = new ApolloServer({
   typeDefs,
   resolvers,
   context: async ({ req }) => {
-    // fetch userId from token in req header
-    console.log("req",req)
     await getUser(req);
-    console.log(req)
     return { userId: req.userId };
   },
   formatError: (error) => {
