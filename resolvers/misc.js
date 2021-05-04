@@ -60,9 +60,9 @@ export default {
         const questValid = question[0].valid;
         if (question[0].valid === valid) {
           //increase the persons score and change his doc
-          //contest, clients, client
+          //contest, participants, participant
           hosted.updateOne(
-            { _id: ObjectID(_id), "clients._id": ObjectID(userId) },
+            { _id: ObjectID(_id), "participants._id": ObjectID(userId) },
             {
               $inc: { "contests.$.score": 2 },
               $push: { "contests.$.tasks": task },
@@ -70,7 +70,7 @@ export default {
           );
         } else {
           hosted.updateOne(
-            { _id: ObjectID(_id), "clients._id": ObjectID(userId) },
+            { _id: ObjectID(_id), "participants._id": ObjectID(userId) },
             {
               $push: { "contests.$.tasks": task },
             }

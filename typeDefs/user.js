@@ -20,7 +20,8 @@ export default gql`
     avatar: String!
     pts: Int!
     contests: [Contest!]
-    notifications: [Notification!]
+    notify: Int!
+    globalNotify: Int!
     waiting: [ID!]
     closed: [ID!]
     hosted: [ID!]
@@ -47,12 +48,14 @@ export default gql`
 
   type Notification {
     message: String!
-    extra: Extra!
-    seen: Boolean!
+    ref: ID!
+    to: [ID!]
+    date: String!
   }
 
-  type Extra {
-    message: String
-    ref: ID
+  type GlobalNotification {
+    message: String!
+    ref: ID!
+    date: String!
   }
 `;

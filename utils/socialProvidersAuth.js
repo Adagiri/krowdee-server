@@ -2,7 +2,6 @@ import jwt from "jsonwebtoken";
 import { users } from "../database/utils/injector.js";
 
 export const socialAuth = async (req, res) => {
-
   const {
     id,
     displayName,
@@ -27,6 +26,8 @@ export const socialAuth = async (req, res) => {
         providerId: id,
         avatar: value,
         about: description ? description : bio,
+        hosted: [],
+        pts: 0,
       });
 
       // Send cookie to frontend
@@ -40,11 +41,11 @@ export const socialAuth = async (req, res) => {
       });
     }
     const data = user ? user : newUser;
-    console.log("token",token);
+    console.log("token", token);
 
     res.cookie("jwt", token);
     res.redirect(`${process.env.CLIENT_URL}/app/`);
   } catch (error) {
     res.redirect(`${process.env.CLIENT_URL}/`);
   }
-};;;;;;;;;;;
+};

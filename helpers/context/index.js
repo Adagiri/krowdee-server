@@ -1,5 +1,8 @@
 import jwt from "jsonwebtoken";
 
+import mongodb from "mongodb";
+const ObjectID = mongodb.ObjectID;
+
 export const getUser = async (req) => {
   try {
     req.userId = null;
@@ -11,9 +14,7 @@ export const getUser = async (req) => {
 
       if (payload.userId) {
         req.userId = payload.userId;
-        console.log(payload.userId)
       }
-  
     }
   } catch (error) {
     throw error;
