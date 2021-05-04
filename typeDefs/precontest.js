@@ -43,6 +43,7 @@ export default gql`
   input toggleDiscussionInput {
     type: String!
     _id: ID!
+    name: String
   }
 `;
 

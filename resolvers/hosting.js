@@ -50,7 +50,7 @@ export default {
               _id,
               ...input,
               host: { ...input.host, _id: ObjectID(userId) },
-              discussion: true
+              discussion: true,
             }),
             discussions.insertOne({ contestId: _id, start }),
             users.updateOne(
@@ -93,7 +93,7 @@ export default {
                 ...input,
                 host: { ...input.host, _id: ObjectID(userId) },
                 ranked: false,
-                discussion: true
+                discussion: true,
               }),
               discussions.insertOne({ contestId: _id, start }),
               users.updateOne(
@@ -138,7 +138,7 @@ export default {
       isAuthenticated,
       async (_, { input }, { userId }) => {
         const { type, name, _id, reason } = input;
-
+        //remove chat too
         let collection = closed;
         try {
           if (type === "global") {
@@ -164,6 +164,7 @@ export default {
                   }
                 ),
                 collection.deleteOne({ _id: ObjectID(_id) }),
+                discussions.deleteOne({ contestId: ObjectID(_id) }),
               ];
               await Promise.all(promises);
             } else {
@@ -194,10 +195,10 @@ export default {
                 ),
 
                 collection.deleteOne({ _id: ObjectID(_id) }),
+                discussions.deleteOne({ contestId: ObjectID(_id) }),
               ];
 
               await Promise.all(promises);
-          
             }
           }
 
