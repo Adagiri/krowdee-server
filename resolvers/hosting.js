@@ -3,7 +3,7 @@ const ObjectID = mongodb.ObjectID;
 
 import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./middleware/index.js";
-import canUserHostGlobal from "../utils/canUserHostGlobal.js";
+import canUserHostOpen from "../utils/canUserHostOpen.js";
 import {
   users,
   discussions,
@@ -16,7 +16,7 @@ export default {
   Query: {},
 
   Mutation: {
-    hostPrivateSearchPin: combineResolvers(
+    hostClosedSearchPin: combineResolvers(
       isAuthenticated,
       async (_, { input }, { userId }) => {
         const { pin } = input;
@@ -32,7 +32,7 @@ export default {
       }
     ),
 
-    hostPrivate: combineResolvers(
+    hostClosed: combineResolvers(
       isAuthenticated,
       async (_, { input }, { userId }) => {
         const { pin, start } = input;
@@ -55,7 +55,10 @@ export default {
             discussions.insertOne({ contestId: _id, start }),
             users.updateOne(
               { _id: ObjectID(userId) },
-              { $push: { closed: _id } }
+              {
+                $push: { hosted: { _id, type: "closed" } },
+                $inc: { closedCount: 1 },
+              }
             ),
           ];
           await Promise.all(promises).then((data) => {
@@ -71,7 +74,7 @@ export default {
       }
     ),
 
-    hostGlobal: combineResolvers(
+    hostOpen: combineResolvers(
       isAuthenticated,
       async (_, { input }, { userId }) => {
         const { start } = input;
@@ -82,7 +85,7 @@ export default {
           const user = await users.findOne({ _id: ObjectID(userId) });
           const { pts, hosted } = user;
 
-          const permit = canUserHostGlobal(pts, hosted);
+          const permit = canUserHostOpen(pts, hosted);
 
           if (permit.status === false) {
             throw new Error(permit.message);
@@ -98,10 +101,13 @@ export default {
               discussions.insertOne({ contestId: _id, start }),
               users.updateOne(
                 { _id: ObjectID(userId) },
-                { $push: { hosted: _id }, $inc: { hostedCount: 1 } }
+                {
+                  $push: { hosted: { _id, type: "open" } },
+                  $inc: { openCount: 1 },
+                }
               ),
             ];
-            // HOST THE GLOBAL CONTEST, OPEN DISCUSSION & UPDATE USER DOC
+            // HOST THE open CONTEST, OPEN DISCUSSION & UPDATE USER DOC
             await Promise.all(promises);
             return true;
           }
@@ -116,7 +122,7 @@ export default {
       async (_, { input }, { userId }) => {
         const { contestId, type, ...host } = input;
         try {
-          if (type === "global") {
+          if (type === "open") {
             await open.updateOne(
               { _id: ObjectID(contestId) },
               { $set: { host: { ...host, _id: ObjectID(userId) } } }
@@ -141,7 +147,7 @@ export default {
         //remove chat too
         let collection = closed;
         try {
-          if (type === "global") {
+          if (type === "open") {
             collection = open;
           }
           const contest = await collection.findOne({ _id: ObjectID(_id) });
@@ -159,8 +165,11 @@ export default {
                 users.updateOne(
                   { _id: ObjectID(userId) },
                   {
-                    $pull: { closed: ObjectID(_id), hosted: ObjectID(_id) },
-                    $inc: { hostedCount: type === "global" ? -1 : 0 },
+                    $pull: {
+                      hosted: { _id: ObjectID(_id) },
+                    },
+                    $inc:
+                      type === "open" ? { openCount: -1 } : { closedCount: -1 },
                   }
                 ),
                 collection.deleteOne({ _id: ObjectID(_id) }),
@@ -171,13 +180,16 @@ export default {
               const participants = contest.participants.map(
                 (participant) => participant._id
               );
-              // HOST THE GLOBAL CONTEST, OPEN DISCUSSION & UPDATE USER DOC
+              // HOST THE open CONTEST, OPEN DISCUSSION & UPDATE USER DOC
               const promises = [
                 users.updateOne(
                   { _id: ObjectID(userId) },
                   {
-                    $pull: { closed: ObjectID(_id), hosted: ObjectID(_id) },
-                    $inc: { hostedCount: type === "global" ? -1 : 0 },
+                    $pull: {
+                      hosted: { _id: ObjectID(_id) },
+                    },
+                    $inc:
+                      type === "open" ? { openCount: -1 } : { closedCount: -1 },
                   }
                 ),
                 notifications.insertOne({
@@ -191,7 +203,10 @@ export default {
 
                 users.updateMany(
                   { _id: { $in: participants } },
-                  { $inc: { notify: 1 }, $pull: { waiting: ObjectID(_id) } }
+                  {
+                    $inc: { notify: 1 },
+                    $pull: { joined: { _id: ObjectID(_id) } },
+                  }
                 ),
 
                 collection.deleteOne({ _id: ObjectID(_id) }),

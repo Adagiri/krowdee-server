@@ -2,7 +2,7 @@ import { gql } from "apollo-server-express";
 
 export default gql`
   extend type Query {
-    fetchUser: User!
+    getUser: UserProfile!
   }
 
   extend type Mutation {
@@ -14,6 +14,24 @@ export default gql`
     avatar: String
     about: String
   }
+  type UserProfile {
+    name: String!
+    avatar: String!
+    pts: Int!
+    contests: [Contest!]
+    notify: Int!
+    globalNotify: Int!
+    closed: [ID!]
+    open: [ID!]
+    joined: [HostedTag!]
+    hosted: [HostedTag!]
+    closedCount: Int
+    openCount: Int!
+    gold: Int
+    silver: Int
+    bronze: Int
+    catz: Categories!
+  }
 
   type User {
     name: String!
@@ -22,10 +40,12 @@ export default gql`
     contests: [Contest!]
     notify: Int!
     globalNotify: Int!
-    waiting: [ID!]
     closed: [ID!]
-    hosted: [ID!]
-    participated: [ID!]
+    open: [ID!]
+    joined: [HostedTag!]
+    hosted: [HostedTag!]
+    closedCount: Int
+    openCount: Int!
     gold: Int
     silver: Int
     bronze: Int
@@ -46,16 +66,8 @@ export default gql`
     variants: Int
   }
 
-  type Notification {
-    message: String!
-    ref: ID!
-    to: [ID!]
-    date: String!
-  }
-
-  type GlobalNotification {
-    message: String!
-    ref: ID!
-    date: String!
+  type HostedTag {
+    _id: ID!
+    type: String!
   }
 `;

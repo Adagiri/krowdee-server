@@ -15,7 +15,7 @@ export default {
   Query: {},
 
   Mutation: {
-    joinPrivate: combineResolvers(
+    joinClosed: combineResolvers(
       isAuthenticated,
       async (_, { input }, { userId }) => {
         const { pin, name, avatar } = input;
@@ -44,7 +44,12 @@ export default {
                   { _id: ObjectID(_id) },
                   {
                     $push: {
-                      participants: { _id: ObjectID(userId), name, avatar },
+                      participants: {
+                        _id: ObjectID(userId),
+                        name,
+                        avatar,
+                        score: 0,
+                      },
                     },
                     $inc: { joined: 1 },
                   }
@@ -52,7 +57,7 @@ export default {
                 users.updateOne(
                   { _id: ObjectID(userId) },
                   {
-                    $push: { waiting: _id },
+                    $push: { waiting: { _id: ObjectID(_id), type: "closed" } },
                   }
                 ),
               ];
@@ -66,7 +71,7 @@ export default {
         }
       }
     ),
-    joinGlobal: combineResolvers(
+    joinOpen: combineResolvers(
       isAuthenticated,
       async (_, { input }, { userId }) => {
         const { _id, name, avatar } = input;
@@ -97,7 +102,12 @@ export default {
                   { _id: ObjectID(_id) },
                   {
                     $push: {
-                      participants: { _id: ObjectID(userId), name, avatar },
+                      participants: {
+                        _id: ObjectID(userId),
+                        name,
+                        avatar,
+                        score: 0,
+                      },
                     },
                     $inc: { joined: 1 },
                   }
@@ -105,7 +115,7 @@ export default {
                 users.updateOne(
                   { _id: ObjectID(userId) },
                   {
-                    $push: { waiting: ObjectID(_id) },
+                    $push: { waiting: { _id: ObjectID(_id), type: "open" } },
                   }
                 ),
               ];
@@ -126,7 +136,7 @@ export default {
         const { _id, type } = input;
         let collection = closed;
         try {
-          if (type === "global") {
+          if (type === "open") {
             collection = open;
           }
           const contest = await collection.findOne({ _id: ObjectID(_id) });
@@ -155,7 +165,7 @@ export default {
             users.updateOne(
               { _id: ObjectID(userId) },
               {
-                $pull: { waiting: ObjectID(_id) },
+                $pull: { waiting: { _id: ObjectID(_id) } },
               }
             ),
           ];
@@ -175,7 +185,7 @@ export default {
         const { _id, reason, contestName, participantId, type } = input;
         let collection = closed;
         try {
-          if (type === "global") {
+          if (type === "open") {
             collection = open;
           }
           const contest = await collection.findOne({ _id: ObjectID(_id) });
@@ -209,7 +219,7 @@ export default {
             }),
             users.updateOne(
               { _id: ObjectID(participantId) },
-              { $inc: { notify: 1 } }
+              { $inc: { notify: 1 }, $pull: {waiting: {_id : ObjectID(_id)}} }
             ),
           ];
           await Promise.all(promises);
@@ -225,7 +235,7 @@ export default {
         const { _id, message, type } = input;
         let collection = closed;
         try {
-          if (type === "global") {
+          if (type === "open") {
             collection = open;
           }
           await collection.updateOne(
@@ -246,7 +256,7 @@ export default {
         let collection = closed;
 
         try {
-          if (type === "global") {
+          if (type === "open") {
             collection = open;
           }
           const contest = await collection.findOne({ _id: ObjectID(_id) });
@@ -258,8 +268,10 @@ export default {
             message: contest.discussion
               ? `${name} locked the discussion`
               : `${name} unlocked the discussion`,
-            time: new Date(),
+            date: new Date(),
             admin: true,
+            _id: ObjectID(userId),
+            name,
           };
           const promises = [
             collection.updateOne(
@@ -279,21 +291,5 @@ export default {
         }
       }
     ),
-
-    //   solveTask: combineResolvers(
-    //     isAuthenticated,
-    //     async (_, { input }, { userId }) => {
-    //       const { _id } = input;
-    //       try {
-    //         const contest = await closed.findOne({ pin });
-    //         if (contest) {
-    //           throw new Error("pin already taken");
-    //         }
-    //         return true;
-    //       } catch (error) {
-    //         throw error;
-    //       }
-    //     }
-    //   ),
   },
 };

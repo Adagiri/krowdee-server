@@ -1,9 +1,6 @@
 import { gql } from "apollo-server-express";
 
 export default gql`
-  extend type Query {
-    getContest: Boolean!
-  }
   extend type Mutation {
     addTask(input: addTaskInput): Boolean!
     editTask(input: editTaskInput): Boolean!

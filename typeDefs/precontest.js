@@ -2,21 +2,21 @@ import { gql } from "apollo-server-express";
 
 export default gql`
   extend type Mutation {
-    joinPrivate(input: joinPrivateInput): Boolean!
-    joinGlobal(input: joinGlobalInput): Boolean!
+    joinClosed(input: joinClosedInput): Boolean!
+    joinOpen(input: joinOpenInput): Boolean!
     leaveContest(input: leaveContestInput): Boolean!
     kickOut(input: kickOutInput): Boolean!
     sendAnnouncement(input: sendAnnouncementInput): Boolean!
     toggleDiscussion(input: toggleDiscussionInput): Boolean!
   }
 
-  input joinPrivateInput {
+  input joinClosedInput {
     pin: Int!
     name: String!
     avatar: String
   }
 
-  input joinGlobalInput {
+  input joinOpenInput {
     _id: ID!
     name: String!
     avatar: String
@@ -47,8 +47,4 @@ export default gql`
   }
 `;
 
-// report contest
-// starting contest
-// view notifications
-// alertContestStartsIn_minutes
 // onquery of hosted, participated, waiting - reset the arrays

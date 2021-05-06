@@ -4,6 +4,7 @@ import contestResolvers from "./contest.js";
 import hostingResolvers from "./hosting.js";
 import precontestResolvers from "./precontest.js";
 import miscResolvers from "./misc.js";
+import contestLiveResolvers from "./contestLive.js";
 
 const customDateScalarResolver = {
   Date: GraphQLDateTime,
@@ -14,7 +15,7 @@ export default [
   contestResolvers,
   hostingResolvers,
   precontestResolvers,
-  // miscResolvers,
-  // blogResolvers,
+  contestLiveResolvers,
+  miscResolvers,
   customDateScalarResolver,
 ];

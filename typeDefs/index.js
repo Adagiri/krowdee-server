@@ -3,8 +3,8 @@ import userTypeDefs from "./user.js";
 import contestTypeDefs from "./contest.js";
 import hostingTypeDefs from "./hosting.js";
 import precontestTypeDefs from "./precontest.js";
-// import miscTypeDefs from "./misc.js";
-// import blogTypeDefs from "./blog.js";
+import contestLiveTypeDefs from "./contestLive.js";
+import miscTypeDefs from "./misc.js";
 
 const typeDefs = gql`
   scalar Date
@@ -23,7 +23,7 @@ export default [
   userTypeDefs,
   hostingTypeDefs,
   precontestTypeDefs,
-  // miscTypeDefs,
-  // blogTypeDefs,
+  contestLiveTypeDefs,
+  miscTypeDefs,
   contestTypeDefs,
 ];

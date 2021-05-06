@@ -11,7 +11,7 @@ const master = 10000;
 const knight = 20000;
 const marshal = 30000;
 
-const canUserHostGlobal = (pts, hosted) => {
+const canUserHostOpen = (pts, hosted) => {
   //WE ARE TO CHECK FOR HOW MANY GLOBAL CONTEST HAVE BEEN HOSTED SINCE THE PREVIOUS MONDAY
   let result = {
     status: true,
@@ -136,4 +136,4 @@ const canUserHostGlobal = (pts, hosted) => {
 };
 
 
-export default canUserHostGlobal;
+export default canUserHostOpen;
