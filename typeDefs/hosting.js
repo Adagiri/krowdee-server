@@ -21,8 +21,10 @@ export default gql`
     totalTasks: Int!
     limit: Int!
     start: String!
+    end: String!
     pin: Int!
     valids: [HostValids]
+
   }
 
   input Host {
@@ -64,7 +66,9 @@ export default gql`
     totalTasks: Int!
     limit: Int!
     start: String!
+    end: String!
     valids: [HostValids]
+    ranked: String!
   }
 
   input hostClosedSearchPinInput {

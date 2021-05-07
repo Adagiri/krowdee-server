@@ -76,22 +76,103 @@ export default {
   },
 
   Mutation: {
-    solveTask: combineResolvers(
-      isAuthenticated,
-      async (_, { input }, { userId }) => {
-        const { _id } = input;
-        try {
-          const contest = await closed.findOne({ pin });
-          if (contest) {
-            throw new Error("pin already taken");
-          }
-          return true;
-        } catch (error) {
-          throw error;
+    solveTask: async (_, { input }, { userId }) => {
+      const { _id, type, num, valid } = input;
+      let collection = closed;
+      try {
+        if (type === "open") {
+          collection = open;
         }
-      }
-    ),
+        const contest = await collection.findOne({ _id: ObjectID(_id) });
+        if (!contest) {
+          throw new Error("contest doesn't exist");
+        }
+        const {
+          end,
+          valids,
+          ranked,
+          start,
+          totalTasks,
+          tasks,
+          participants,
+        } = contest;
+        let pts =
+          ranked === "false"
+            ? 0
+            : ranked === "bgn"
+            ? 1
+            : ranked === "itm"
+            ? 2
+            : 3;
 
+        if (
+          !participants ||
+          !participants.find(
+            (participant) => participant._id.toString() === userId
+          )
+        ) {
+          throw new Error("you are not part of this contest");
+        }
+        if (new Date() <= start) {
+          throw new Error("contest has not started");
+        }
+        if (new Date() >= end) {
+          throw new Error("contest already ended");
+        }
+        console.log(
+          participants.find(
+            (participant) => participant._id.toString() === userId
+          )
+        );
+
+        let iop =
+          participants &&
+          participants.find(
+            (participant) => participant._id.toString() === userId
+          );
+
+        if (iop && iop.tasks.find((task) => task.num === num)) {
+          throw new Error("you are already past this question");
+        }
+        const validOption = valids.find((valid) => valid.i === num);
+
+        let next = totalTasks <= num ? null : tasks[num];
+
+        if (ranked !== "false") {
+          await Promise.all(
+           [ collection.updateOne(
+              { _id: ObjectID(_id), "participants._id": ObjectID(userId) },
+              {
+                $push: { "participants.$.tasks": { num, opt: valid } },
+                $inc:
+                  validOption.v === valid
+                    ? { "participants.$.score": pts }
+                    : { "participants.$.score": 0 },
+              }
+            ),
+            users.updateOne({ _id: ObjectID(userId) }, { $inc: { pts: pts } })]
+          );
+        } else {
+          await collection.updateOne(
+            { _id: ObjectID(_id), "participants._id": ObjectID(userId) },
+            {
+              $push: { "participants.$.tasks": { num, opt: valid } },
+              $inc:
+                validOption.v === valid
+                  ? { "participants.$.score": pts }
+                  : { "participants.$.score": 0 },
+            }
+          );
+        }
+        return {
+          userValid: valid,
+          valid: validOption.v,
+          next,
+        };
+      } catch (error) {
+        throw error;
+      }
+    },
     sendMessage: combineResolvers(
       isAuthenticated,
       async (_, { input }, { userId }) => {

@@ -51,6 +51,7 @@ export default {
               ...input,
               host: { ...input.host, _id: ObjectID(userId) },
               discussion: true,
+              ranked: "false"
             }),
             discussions.insertOne({ contestId: _id, start }),
             users.updateOne(
@@ -95,7 +96,6 @@ export default {
                 _id,
                 ...input,
                 host: { ...input.host, _id: ObjectID(userId) },
-                ranked: false,
                 discussion: true,
               }),
               discussions.insertOne({ contestId: _id, start }),

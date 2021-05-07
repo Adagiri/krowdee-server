@@ -29,14 +29,14 @@ export default gql`
 
   input solveTaskInput {
     _id: ID!
+    type: String!
     num: Int!
     valid: String
-    userId: ID!
   }
 
   input getOpenContestsInput {
     category: String
-    ranked: Boolean
+    ranked: String!
   }
 
   input getContestInput {
@@ -97,7 +97,7 @@ export default gql`
   type HostedContest {
     _id: ID!
     host: ID!
-    ranked: Boolean
+    ranked: String!
     discussion: Boolean!
     announcements: [Announcement!]
     name: String!
@@ -119,7 +119,7 @@ export default gql`
 
   type HostedContestExcerpt {
     _id: ID!
-    ranked: Boolean
+    ranked: String!
     name: String!
     category: String
     mode: String!
@@ -132,7 +132,7 @@ export default gql`
   type HostedContestWithValids {
     _id: ID!
     host: ID!
-    ranked: Boolean
+    ranked: String!
     discussion: Boolean!
     announcements: [Announcement!]
     name: String!
