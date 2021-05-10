@@ -9,13 +9,14 @@ import {
   open,
   users,
 } from "../database/utils/injector.js";
+import { NoFragmentCyclesRule } from "graphql";
 
 export default {
   Query: {
     getDiscussions: combineResolvers(
       isAuthenticated,
       async (_, { input }, { userId }) => {
-        const { _id, cursor, limit = 50 } = input;
+        const { _id, cursor, limit = 5 } = input;
         try {
           //fetch discussions
           const discuss = await discussions.findOne({
@@ -25,11 +26,11 @@ export default {
             throw new Error("discussion not found");
           }
 
-          const discussion = await discussions
+          let discussion = await discussions
             .aggregate([
               {
                 $match: {
-                  _id: ObjectID(_id),
+                  contestId: ObjectID(_id),
                 },
               },
               {
@@ -38,13 +39,18 @@ export default {
                 },
               },
               {
+                $match: {
+                  "messages._id": { $lt: ObjectID(cursor) },
+                },
+              },
+              {
                 $sort: {
-                  "messages.date": -1,
+                  "messages._id": -1,
                 },
               },
 
               {
-                $limit: limit,
+                $limit: limit + 1,
               },
               {
                 $project: {
@@ -55,15 +61,21 @@ export default {
             ])
             .toArray();
 
+          console.log(discussion.map((elem) => elem.messages));
+
           const hasNextPage = discussion.length > limit;
           discussion = hasNextPage ? discussion.slice(0, -1) : discussion;
 
           // return discuss
           return {
-            discussion: { ...discuss, messages: discussion },
+            discussion: {
+              ...discuss,
+              messages: discussion.map((elem) => elem.messages),
+            },
             pageInfo: {
               nextPageCursor: hasNextPage
-                ? discussion[discussion.length - 1].date
+                ? discussion.map((elem) => elem.messages)[discussion.length - 1]
+                    ._id
                 : null,
               hasNextPage,
             },
@@ -73,12 +85,90 @@ export default {
         }
       }
     ),
+
+    getOpenContests: async (_, { input }, { userId }) => {
+      const { limit = 2, cursor = 2, ...rest } = input;
+      const params = {};
+      for (let key in rest) {
+        if (rest[key] === null) {
+          return;
+        }
+        params[key] = rest[key];
+      }
+
+      try {
+        //SORT BY JOINED
+        const contests = await open
+          .find({ ...params })
+          .limit(limit * cursor)
+          .sort({ joined: -1 })
+          .toArray();
+        return contests;
+      } catch (error) {
+        throw error;
+      }
+    },
+    getRecords: combineResolvers(
+      isAuthenticated,
+      async (_, { input }, { userId }) => {
+        const { ccs, ops } = input;
+      
+        try {
+          const closedContest =
+            ccs.length > 0
+              ? await closed.find({ _id: { $in: ccs.map(obj => ObjectID(obj)) } }).toArray()
+              : [];
+
+          const openContest =
+            ops.length > 0
+              ? await open.find({ _id: { $in: ops.map(obj => ObjectID(obj)) } }).toArray()
+              : [];
+console.log(openContest)
+          return [...openContest, ...closedContest];
+        } catch (error) {
+          throw error;
+        }
+      }
+    ),
+    getContest: combineResolvers(isAuthenticated, async(_, { input }, {userId})=> {
+const { type, _id } = input;
+let collection = closed
+      try {
+        if (type === "open") {
+          collection = open
+        }
+        const contest = await collection.findOne({_id: ObjectID(_id)})
+        if (!contest) {
+          throw new Error("Contest not found")
+        }
+        return contest;
+      } catch (error) {
+        throw error
+      }
+    }),
+    getCorrect: combineResolvers(isAuthenticated, async(_, { input }, {userId})=> {
+      const { type, _id } = input;
+      let collection = closed
+            try {
+              if (type === "open") {
+                collection = open
+              }
+              const contest = await collection.findOne({_id: ObjectID(_id)})
+              if (!contest) {
+                throw new Error("Contest not found")
+              }
+              return contest.valids;
+            } catch (error) {
+              throw error
+            }
+          })
   },
 
   Mutation: {
     solveTask: async (_, { input }, { userId }) => {
       const { _id, type, num, valid } = input;
       let collection = closed;
+      //CATEGORY UPDATE IN USER COLLECTION DOC
       try {
         if (type === "open") {
           collection = open;
@@ -95,15 +185,10 @@ export default {
           totalTasks,
           tasks,
           participants,
+          category,
+          level,
         } = contest;
-        let pts =
-          ranked === "false"
-            ? 0
-            : ranked === "bgn"
-            ? 1
-            : ranked === "itm"
-            ? 2
-            : 3;
+        let pts = level === "bgn" ? 1 : level === "itm" ? 2 : 3;
 
         if (
           !participants ||
@@ -124,7 +209,7 @@ export default {
             (participant) => participant._id.toString() === userId
           )
         );
-
+        //CHECK IF USER ALREADY ANSWERED THAT QUESTION OR QUESTION IS PASSED
         let iop =
           participants &&
           participants.find(
@@ -137,10 +222,11 @@ export default {
         const validOption = valids.find((valid) => valid.i === num);
 
         let next = totalTasks <= num ? null : tasks[num];
+        let catz = "catz." + category;
 
-        if (ranked !== "false") {
-          await Promise.all(
-           [ collection.updateOne(
+        if (ranked) {
+          await Promise.all([
+            collection.updateOne(
               { _id: ObjectID(_id), "participants._id": ObjectID(userId) },
               {
                 $push: { "participants.$.tasks": { num, opt: valid } },
@@ -150,8 +236,11 @@ export default {
                     : { "participants.$.score": 0 },
               }
             ),
-            users.updateOne({ _id: ObjectID(userId) }, { $inc: { pts: pts } })]
-          );
+            users.updateOne(
+              { _id: ObjectID(userId) },
+              { $inc: { pts: pts, [catz]: pts } }
+            ),
+          ]);
         } else {
           await collection.updateOne(
             { _id: ObjectID(_id), "participants._id": ObjectID(userId) },
@@ -173,41 +262,45 @@ export default {
         throw error;
       }
     },
-    sendMessage: combineResolvers(
-      isAuthenticated,
-      async (_, { input }, { userId }) => {
-        const { _id, message, name, type } = input;
-        let collection = closed;
-        try {
-          if (type === "open") {
-            collection = open;
-          }
-          const contest = await collection.findOne({ _id: ObjectID(_id) });
-          if (!contest) {
-            throw new Error("Contest doesn't exist");
-          } else if (contest.discussion === false) {
-            throw new Error("discussion is locked");
-          } else {
-            await discussions.updateOne(
-              { contestId: ObjectID(_id) },
-              {
-                $push: {
-                  messages: {
-                    name,
-                    message,
-                    _id: ObjectID(userId),
-                    date: new Date(),
-                  },
-                },
-              }
-            );
-          }
-          return true;
-        } catch (error) {
-          throw error;
+    sendMessage: async (_, { input }, { userId }) => {
+      const { _id, message, name, type } = input;
+      let collection = closed;
+      try {
+        if (type === "open") {
+          collection = open;
         }
+        const contest = await collection.findOne({ _id: ObjectID(_id) });
+        if (!contest) {
+          throw new Error("Contest doesn't exist");
+        } else if (
+          !contest.participants.find(
+            (participant) => participant._id.toString() === userId
+          ) ||
+          !contest.participants
+        ) {
+          throw new Error("you are not part of this contest");
+        } else if (contest.discussion === false) {
+          throw new Error("discussion is locked");
+        } else {
+          await discussions.updateOne(
+            { contestId: ObjectID(_id) },
+            {
+              $push: {
+                messages: {
+                  name,
+                  message,
+                  userId: ObjectID(userId),
+                  _id: ObjectID(),
+                },
+              },
+            }
+          );
+        }
+        return true;
+      } catch (error) {
+        throw error;
       }
-    ),
+    },
 
     startContest: combineResolvers(
       isAuthenticated,
@@ -220,7 +313,13 @@ export default {
           }
           const contest = await collection.findOne({ _id: ObjectID(_id) });
           if (!contest) {
-            throw new Error("Contest doesn't exist");
+            throw new Error("contest doesn't exist");
+          } else if (new Date().toISOString() < contest.start) {
+            console.log(new Date().toISOString());
+            console.log(contest.start);
+            throw new Error("contest has not started");
+          } else if (new Date().toISOString() > contest.end) {
+            throw new Error("contest already ended");
           } else {
             await users.updateOne(
               { _id: ObjectID(userId) },
@@ -252,6 +351,8 @@ export default {
           const contest = await collection.findOne({ _id: ObjectID(_id) });
           if (!contest) {
             throw new Error("Contest doesn't exist");
+          } else if (new Date().toISOString() < contest.end) {
+            throw new Error("contest has not ended");
           } else {
             await users.updateOne(
               { _id: ObjectID(userId) },

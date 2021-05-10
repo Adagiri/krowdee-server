@@ -57,7 +57,7 @@ export default {
                 users.updateOne(
                   { _id: ObjectID(userId) },
                   {
-                    $push: { waiting: { _id: ObjectID(_id), type: "closed" } },
+                    $push: { joined: { _id: ObjectID(_id), type: "closed" } },
                   }
                 ),
               ];
@@ -115,7 +115,7 @@ export default {
                 users.updateOne(
                   { _id: ObjectID(userId) },
                   {
-                    $push: { waiting: { _id: ObjectID(_id), type: "open" } },
+                    $push: { joined: { _id: ObjectID(_id), type: "open" } },
                   }
                 ),
               ];
@@ -165,7 +165,7 @@ export default {
             users.updateOne(
               { _id: ObjectID(userId) },
               {
-                $pull: { waiting: { _id: ObjectID(_id) } },
+                $pull: { joined: { _id: ObjectID(_id) } },
               }
             ),
           ];
@@ -219,7 +219,7 @@ export default {
             }),
             users.updateOne(
               { _id: ObjectID(participantId) },
-              { $inc: { notify: 1 }, $pull: {waiting: {_id : ObjectID(_id)}} }
+              { $inc: { notify: 1 }, $pull: {joined: {_id : ObjectID(_id)}} }
             ),
           ];
           await Promise.all(promises);

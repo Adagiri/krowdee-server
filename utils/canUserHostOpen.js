@@ -31,7 +31,7 @@ const canUserHostOpen = (pts, hosted) => {
 
   //CHECK HOW MANY WAS HOSTED AFTER THE LAST MONDAY
   const totalRecentlyHosted = hosted.filter(
-    (host) => host.getTimestamp() > getPreviousMonday()
+    (host) => host._id.getTimestamp() > getPreviousMonday()
   ).length;
 
   //BELOW 1500

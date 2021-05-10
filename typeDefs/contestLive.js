@@ -1,23 +1,26 @@
 import { gql } from "apollo-server-express";
 
+
 export default gql`
   extend type Query {
     getDiscussions(input: getDiscussionsInput): Discuss!
     getOpenContests(input: getOpenContestsInput): [HostedContestExcerpt!]
     getRecords(input: getRecordsInput): [HostedContestExcerpt]
     getContest(input: getContestInput): HostedContest!
-    getCorrections(input: getCorrectionsInput): HostedContestWithValids!
+    getCorrect(input: getCorrectInput): [LiveValids!]
   }
 
   extend type Mutation {
     sendMessage(input: sendMessageInput): Boolean!
     solveTask(input: solveTaskInput): NextTask!
     startContest(input: startContestInput): NextTask!
-    endContest(input: endContestInput): HostedContestWithValids!
+    endContest(input: endContestInput): HostedContest!
   }
 
   input getDiscussionsInput {
     _id: ID!
+    limit: Int
+    cursor: String
   }
 
   input sendMessageInput {
@@ -36,7 +39,11 @@ export default gql`
 
   input getOpenContestsInput {
     category: String
-    ranked: String!
+    ranked: Boolean
+    level: String
+    cursor: Int
+    limit: Int
+    mode: String
   }
 
   input getContestInput {
@@ -50,11 +57,11 @@ export default gql`
   }
 
   input getRecordsInput {
-    closed: [ID!]
-    open: [ID!]
+    ccs: [ID!]
+    ops: [ID!]
   }
 
-  input getCorrectionsInput {
+  input getCorrectInput {
     _id: ID!
     type: String!
   }
@@ -97,8 +104,10 @@ export default gql`
   type HostedContest {
     _id: ID!
     host: ID!
-    ranked: String!
+    ranked: Boolean
+    level: String
     discussion: Boolean!
+    type: String
     announcements: [Announcement!]
     name: String!
     summary: String
@@ -119,20 +128,24 @@ export default gql`
 
   type HostedContestExcerpt {
     _id: ID!
-    ranked: String!
+    type: String
+    ranked: Boolean
+    level: String
     name: String!
     category: String
-    mode: String!
+    mode: String
     time: Int
     totalTasks: Int!
-    joined: Int!
+    joined: Int
     start: String!
   }
 
   type HostedContestWithValids {
     _id: ID!
+    type: String
     host: ID!
-    ranked: String!
+    ranked: Boolean
+    level: String
     discussion: Boolean!
     announcements: [Announcement!]
     name: String!
@@ -183,6 +196,8 @@ export default gql`
     num: Int!
     opt: String
   }
+
+
 `;
 
 //contestEnded

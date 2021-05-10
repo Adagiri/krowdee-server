@@ -51,7 +51,8 @@ export default {
               ...input,
               host: { ...input.host, _id: ObjectID(userId) },
               discussion: true,
-              ranked: "false"
+              ranked: "false",
+              type: "closed",
             }),
             discussions.insertOne({ contestId: _id, start }),
             users.updateOne(
@@ -97,13 +98,14 @@ export default {
                 ...input,
                 host: { ...input.host, _id: ObjectID(userId) },
                 discussion: true,
+                type: "open",
               }),
               discussions.insertOne({ contestId: _id, start }),
               users.updateOne(
                 { _id: ObjectID(userId) },
                 {
                   $push: { hosted: { _id, type: "open" } },
-                  $inc: { openCount: 1 },
+                  $inc: { hostedCount: 1 },
                 }
               ),
             ];

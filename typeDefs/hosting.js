@@ -24,7 +24,6 @@ export default gql`
     end: String!
     pin: Int!
     valids: [HostValids]
-
   }
 
   input Host {
@@ -68,7 +67,8 @@ export default gql`
     start: String!
     end: String!
     valids: [HostValids]
-    ranked: String!
+    ranked: Boolean!
+    level: String!
   }
 
   input hostClosedSearchPinInput {
