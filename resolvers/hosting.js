@@ -10,10 +10,35 @@ import {
   closed,
   open,
   notifications,
+  tasksTemplate,
 } from "../database/utils/injector.js";
 
 export default {
-  Query: {},
+  Query: {
+    getTemplate: combineResolvers(
+      isAuthenticated,
+      async (_, { input }, { userId }) => {
+        const { size, ...rest } = input;
+        let params = {};
+
+        for (const key in rest) {
+          if (rest[key] === null) {
+            return;
+          }
+          params[key] = rest[key];
+        }
+        try {
+          let tasks = tasksTemplate.aggregate([
+            { $match: { ...params } },
+            { $sample: { size } },
+          ]);
+          return tasks;
+        } catch (error) {
+          throw error;
+        }
+      }
+    ),
+  },
 
   Mutation: {
     hostClosedSearchPin: combineResolvers(

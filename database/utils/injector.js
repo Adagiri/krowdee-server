@@ -4,6 +4,7 @@ export let closed;
 export let discussions;
 export let notifications;
 export let globalNotifications;
+export let tasksTemplate;
 
 export const injectDB = async (conn) => {
   if (users) {
@@ -17,6 +18,7 @@ export const injectDB = async (conn) => {
       conn.db(process.env.KROWDEE_DB).collection("discussions"),
       conn.db(process.env.KROWDEE_DB).collection("notifications"),
       conn.db(process.env.KROWDEE_DB).collection("global_notifications"),
+      conn.db(process.env.KROWDEE_DB).collection("tasks_template"),
     ];
 
     Promise.all(promises).then((data) => {
@@ -26,6 +28,7 @@ export const injectDB = async (conn) => {
       discussions = data[3];
       notifications = data[4];
       globalNotifications = data[5];
+      tasksTemplate = data[6];
     });
 
   } catch (e) {

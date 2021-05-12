@@ -1,12 +1,22 @@
 import { gql } from "apollo-server-express";
 
 export default gql`
+  extend type Query {
+    getTemplate(input: getTemplateInput): [Task!]
+  }
+
   extend type Mutation {
     hostClosedSearchPin(input: hostClosedSearchPinInput): Boolean!
     hostClosed(input: hostClosedInput): Boolean!
     hostOpen(input: hostOpenInput): Boolean!
     refreshHost(input: refreshHostInput): Boolean!
     unHost(input: unHostInput): Boolean!
+  }
+
+  input getTemplateInput {
+    category: String
+    size: Int
+    level: String
   }
 
   input hostClosedInput {
@@ -38,7 +48,7 @@ export default gql`
     opts: HostOptionInput!
     time: String
   }
- 
+
   input HostValids {
     i: Int!
     v: String!
@@ -88,5 +98,4 @@ export default gql`
     name: String!
     reason: String
   }
-
 `;

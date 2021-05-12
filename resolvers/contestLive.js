@@ -98,6 +98,7 @@ export default {
 
       try {
         //SORT BY JOINED
+        //ONLY ONCE THAT HAVE NOT STARTED
         const contests = await open
           .find({ ...params })
           .limit(limit * cursor)
