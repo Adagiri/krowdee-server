@@ -16,6 +16,12 @@ const typeDefs = gql`
   type Mutation {
     _: Int
   }
+
+  interface MutationResponse {
+    code: String!
+    success: Boolean!
+    message: String!
+  }
 `;
 
 export default [
